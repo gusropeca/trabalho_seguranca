@@ -25,7 +25,7 @@ O detector ficará rodando e monitorando em silêncio até que uma ameaça seja 
 
 No segundo terminal, com o ambiente  venv ativo, execute:  
   ```bash
-  python log_simulator.py
+  python log_simulator.py     ou    python traffic_simulator.py (Nesse em específico é necessário ver a sua rede no ipgconfig e selecionar corretamente qual será usada para o teste).
   ```
 Assim, será possível ver os alertas aparecedo no terminal do detector. 
 Após o alerta aparecer no terminal, aperte Ctrl+C para gerar dois relatórios na pasta do projeto: 'report.html' e 'report.json'.
