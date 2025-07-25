@@ -1,26 +1,32 @@
-import requests
+from scapy.all import IP, TCP, send
 import time
 
 # --- Configurações da Simulação ---
-# URL de um site que responde rápido. Usar um site grande como o Google é seguro.
-TARGET_URL = "https://www.google.com"
-# Número de requisições que vamos fazer para gerar tráfego
-NUM_REQUESTS = 200
+TARGET_IP = "8.8.8.8"      # IP do DNS do Google, um alvo robusto
+TARGET_PORT = 53           # Porta 53 (DNS) é comumente usada para testes de inundação
+NUM_PACKETS = 300          # Número de pacotes a serem enviados
 
-print(f"[*] Simulador de Tráfego de Rede")
-print(f"[*] Alvo: {TARGET_URL}")
-print(f"[*] Enviando {NUM_REQUESTS} requisições para gerar pacotes...")
+# --- Construção do Pacote ---
+# Criamos um pacote IP/TCP simples. O conteúdo não importa, apenas o volume.
+packet = IP(dst=TARGET_IP) / TCP(dport=TARGET_PORT, flags="S")
 
-# Loop para enviar as requisições
-for i in range(NUM_REQUESTS):
-    try:
-        # Faz uma requisição GET. O timeout baixo evita que o script fique preso.
-        requests.get(TARGET_URL, timeout=1)
-        # Imprime o progresso na mesma linha para não poluir o terminal
-        print(f"--> Pacotes da requisição {i + 1}/{NUM_REQUESTS} enviados.", end='\r')
-    except requests.exceptions.RequestException as e:
-        # Se houver um erro de rede (normal acontecer), apenas imprime e continua.
-        # print(f"Erro na requisição {i+1}: {e}")
-        pass
+print(f"[*] Simulador de Tráfego Otimizado (Modo Scapy)")
+print(f"[*] Alvo: {TARGET_IP}:{TARGET_PORT}")
+print(f"[*] Enviando {NUM_PACKETS} pacotes o mais rápido possível...")
 
-print("\n[*] Simulação de tráfego de rede concluída!")
+# --- Loop de Envio Rápido ---
+start_time = time.time()
+
+# A função send() com verbose=0 é extremamente rápida.
+for _ in range(NUM_PACKETS):
+    send(packet, verbose=0)
+
+end_time = time.time()
+duration = end_time - start_time
+
+print(f"[*] Simulação concluída!")
+print(f"[*] {NUM_PACKETS} pacotes enviados em {duration:.2f} segundos.")
+
+if duration > 0:
+    pps = NUM_PACKETS / duration
+    print(f"[*] Média de {pps:.2f} pacotes por segundo (PPS).")
