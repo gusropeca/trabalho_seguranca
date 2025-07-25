@@ -6,6 +6,8 @@ import pandas as pd
 from collections import deque
 from datetime import datetime, timedelta
 from scapy.all import IP, sniff
+from scapy.arch.windows import get_windows_if_list 
+from collections import deque
 import threading
 
 # --- Configurações Globais ---
@@ -71,8 +73,37 @@ def run_log_monitor():
         
         
 def run_packet_sniffer():
-   
+    """Função que captura pacotes de rede em sua própria thread."""
+    from scapy.all import get_working_if # Importa a função de detecção automática
+
     print("[PACKET_SNIFFER] Iniciando captura de pacotes (requer admin)...")
+    
+    active_interface = None
+    try:
+        # TENTATIVA 1: Modo Automático
+        #active_interface_obj = get_working_if()
+        active_interface = active_interface_obj.name
+        print(f"[PACKET_SNIFFER] Interface de rede ativa detectada automaticamente: {active_interface}")
+    except Exception:
+        # TENTATIVA 2: Modo Interativo (Plano B)
+        print("[PACKET_SNIFFER] Não foi possível detectar a interface automaticamente.")
+        print("[PACKET_SNIFFER] Por favor, selecione a interface de rede para monitorar:")
+        
+        interfaces = get_windows_if_list()
+        
+        for i, iface in enumerate(interfaces):
+            print(f"  {i}: {iface.get('name')} ({iface.get('description')})")
+
+        while active_interface is None:
+            try:
+                choice = input("--> Digite o NÚMERO da interface desejada e pressione Enter: ")
+                chosen_interface_details = interfaces[int(choice)]
+                active_interface = chosen_interface_details.get('name')
+            except (ValueError, IndexError):
+                print("Escolha inválida. Por favor, digite um dos números da lista.")
+
+    print(f"[PACKET_SNIFFER] Ótimo! Ouvindo na interface: {active_interface}")
+
     packet_counts = {}
 
     def process_packet(packet):
@@ -89,16 +120,15 @@ def run_packet_sniffer():
                 packet_counts[ip_src].popleft()
 
             if len(packet_counts[ip_src]) > PACKET_MAX_COUNT:
-                # Pega o "bastão da palavra" para escrever no "mural"
                 with ip_lock:
                     if ip_src not in detected_malicious_ips:
                         print(f"\n[!!!] ALERTA DE PACOTE: Tráfego excessivo do IP {ip_src} [!!!]")
                         detected_malicious_ips.add(ip_src)
-
     try:
-        sniff(prn=process_packet, store=False, stop_filter=lambda p: stop_event.is_set())
+        sniff(iface=active_interface, prn=process_packet, store=False, stop_filter=lambda p: stop_event.is_set())
     except Exception as e:
         print(f"[PACKET_SNIFFER] ERRO: Certifique-se de rodar como admin. Detalhes: {e}")
+        
         
         
 def generate_reports():
