@@ -16,7 +16,7 @@ O repositório está organizado da seguinte forma:
 
 
 O detector precisa de permissões elevadas para capturar pacotes de rede. Para testar o detector, é preciso abrir 2 terminais: um como administrador e o outro normalmente.
-Depois, navegue até a pasta do projeto e ative o ambiente virtual "source venv/Scripts/activate".
+Depois, navegue até a pasta do projeto e ative o ambiente virtual '''.\venv\Scripts\activate'''.
 Em seguida,  Execute o script principal:
     ```bash
     python detector.py
